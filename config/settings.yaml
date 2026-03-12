@@ -9,7 +9,13 @@ polling:
   ransomware_live_interval_minutes: 30  # Ransomware leak site monitor
   otx_interval_minutes: 60          # AlienVault OTX
   shadowserver_interval_minutes: 60 # Shadowserver exposure alerts
+  government_interval_minutes: 60  # PA Attorney General
   social_interval_minutes: 30
+
+# Digest scheduling
+digest:
+  daily_hour: "07:00"  # UTC time for daily digest
+  weekly_day: "monday"  # Day for weekly digest
 
 # HIBP domain monitoring (requires HIBP_API_KEY)
 hibp:

@@ -39,10 +39,29 @@ def main():
     seed_parser.add_argument("--file", help="Path to seed CSV file")
 
     # export - export Power BI data
-    export_parser = subparsers.add_parser("export", help="Export data for Power BI")
+    subparsers.add_parser("export", help="Export data for Power BI")
 
     # init-db - initialize database
     subparsers.add_parser("init-db", help="Initialize the database")
+
+    # status - interactive CLI dashboard
+    status_parser = subparsers.add_parser("status", help="Show feed status dashboard")
+    status_parser.add_argument("--hours", type=int, default=24,
+                               help="Lookback period in hours (default: 24)")
+
+    # digest - send a digest report now
+    digest_parser = subparsers.add_parser("digest", help="Send a digest report now")
+    digest_parser.add_argument("--hours", type=int, default=24,
+                               help="Lookback period in hours (default: 24)")
+
+    # health - show source health
+    health_parser = subparsers.add_parser("health", help="Show source health status")
+    health_parser.add_argument("--hours", type=int, default=24,
+                               help="Lookback period in hours (default: 24)")
+
+    # timeline - show incident timeline
+    timeline_parser = subparsers.add_parser("timeline", help="Show incident timeline")
+    timeline_parser.add_argument("incident_id", type=int, help="Incident ID to show timeline for")
 
     parser.add_argument("--log-level", default="INFO", help="Log level")
 
@@ -81,6 +100,79 @@ def main():
         db_url = get_database_url()
         init_db(db_url)
         print(f"Database initialized: {db_url}")
+
+    elif args.command == "status":
+        from .dashboard import print_dashboard
+        db_url = get_database_url()
+        engine, Session = init_db(db_url)
+        session = Session()
+        try:
+            print_dashboard(session, args.hours)
+        finally:
+            session.close()
+
+    elif args.command == "digest":
+        from .alerts.digest import send_digest
+        db_url = get_database_url()
+        engine, Session = init_db(db_url)
+        session = Session()
+        try:
+            success = send_digest(session, args.hours)
+            if success:
+                print("Digest sent successfully")
+            else:
+                print("Digest delivery failed (check Teams/email config)")
+        finally:
+            session.close()
+
+    elif args.command == "health":
+        from .health import SourceHealthTracker
+        db_url = get_database_url()
+        engine, Session = init_db(db_url)
+        session = Session()
+        try:
+            tracker = SourceHealthTracker(session)
+            print()
+            print("  SOURCE HEALTH STATUS")
+            print("  " + "=" * 75)
+            print(tracker.render_health_table(args.hours))
+            print()
+            failing = tracker.get_failing_sources(min_consecutive=3, hours=args.hours)
+            if failing:
+                print("  WARNINGS:")
+                for f in failing:
+                    print(f"    {f['source_name']}: {f['consecutive_failures']} "
+                          f"consecutive failures. Last error: {f['last_error_message']}")
+                print()
+        finally:
+            session.close()
+
+    elif args.command == "timeline":
+        from .timeline import get_incident_timeline
+        db_url = get_database_url()
+        engine, Session = init_db(db_url)
+        session = Session()
+        try:
+            events = get_incident_timeline(session, args.incident_id)
+            if not events:
+                print(f"No timeline events for incident {args.incident_id}")
+            else:
+                print(f"\n  INCIDENT {args.incident_id} TIMELINE")
+                print("  " + "=" * 60)
+                for e in events:
+                    ts = e["timestamp"].strftime("%Y-%m-%d %H:%M") if e["timestamp"] else "?"
+                    prev = e["previous_status"] or "None"
+                    print(f"  {ts}  {prev} -> {e['status']}")
+                    if e["trigger"]:
+                        print(f"           Trigger: {e['trigger']}")
+                    if e["source"]:
+                        print(f"           Source: {e['source']}")
+                    if e["notes"]:
+                        print(f"           Notes: {e['notes']}")
+                    print(f"           Score at time: {e['confidence_score_at']}")
+                    print()
+        finally:
+            session.close()
 
     else:
         parser.print_help()

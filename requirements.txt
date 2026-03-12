@@ -18,6 +18,9 @@ alembic>=1.12.0
 # Text processing / NLP
 rapidfuzz>=3.5.0
 
+# Web scraping
+beautifulsoup4>=4.12.0
+
 # Configuration
 python-dotenv>=1.0.0
 pyyaml>=6.0.1

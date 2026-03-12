@@ -2,27 +2,30 @@
 
 Coordinates the full pipeline:
 1. Build search queries from entity list + config
-2. Fetch mentions from all sources
-3. Match mentions to entities
+2. Fetch mentions from all sources (with health tracking)
+3. Match mentions to entities (with geo enrichment)
 4. Score confidence
 5. Deduplicate
 6. Summarize
-7. Persist to database
-8. Route alerts (Teams, email, SharePoint)
+7. Persist to database (with timeline tracking)
+8. Route alerts (Teams, email, SharePoint, watchlist)
 9. Export for Power BI
 """
 
 import logging
+import time
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
+from .geo import enrich_county
+from .health import SourceHealthTracker
 from .models import Entity, EntityAlias, Incident, IncidentSource, RawMention
 from .scoring.confidence import ConfidenceScorer
 from .scoring.dedup import deduplicate_mentions
 from .scoring.summarizer import summarize_incident
 from .search import build_all_queries
-from .sources.base import SourceMention
+from .sources.base import BaseSource, SourceMention
 from .sources.cisa import CISASource
 from .sources.cybernews import (
     BleepingComputerSource,
@@ -34,9 +37,11 @@ from .sources.gdelt import GDELTSource
 from .sources.hibp import HIBPSource
 from .sources.news import GoogleNewsSource
 from .sources.otx import OTXSource
+from .sources.pa_attorney_general import PAAttorneyGeneralSource
 from .sources.ransomware_live import RansomwareLiveSource
 from .sources.shadowserver import ShadowserverSource
 from .sources.social import RedditSource
+from .timeline import auto_update_timeline
 from .utils.text import extract_incident_type, normalize_text
 
 logger = logging.getLogger(__name__)
@@ -49,10 +54,11 @@ class FeedOrchestrator:
         self.session = session
         self.config = config
         self.scorer = ConfidenceScorer(config)
+        self.health_tracker = SourceHealthTracker(session)
 
         # Initialize sources — layered model
         # Tier 1: High-confidence public sources
-        self.sources = [
+        self.sources: list[BaseSource] = [
             GoogleNewsSource(config),          # Google News RSS
             BleepingComputerSource(config),    # Fast ransomware reporting
             SecurityWeekSource(config),        # Enterprise breach news
@@ -60,6 +66,7 @@ class FeedOrchestrator:
             RecordedFutureSource(config),      # Ransomware intelligence
             CISASource(config),                # CISA alerts + KEV
             HIBPSource(config),                # Have I Been Pwned breach DB
+            PAAttorneyGeneralSource(config),   # PA AG breach notices
         ]
         # Tier 2: Broad discovery
         self.sources += [
@@ -76,8 +83,12 @@ class FeedOrchestrator:
             RedditSource(config),              # Reddit social monitoring
         ]
 
-    def run_cycle(self) -> list[dict]:
+    def run_cycle(self, source_filter: list[str] | None = None) -> list[dict]:
         """Execute one full detection cycle.
+
+        Args:
+            source_filter: Optional list of source_type strings to poll.
+                           If None, polls all sources.
 
         Returns:
             List of new/updated incident dicts that were processed.
@@ -95,16 +106,43 @@ class FeedOrchestrator:
             logger.warning("No search queries generated (no watched entities?)")
             return []
 
-        # 2. Fetch from all sources
+        # 2. Fetch from sources (with health tracking)
+        sources_to_poll = self.sources
+        if source_filter:
+            sources_to_poll = [s for s in self.sources if s.source_type in source_filter]
+
         all_mentions: list[SourceMention] = []
-        for source in self.sources:
+        for source in sources_to_poll:
+            start_time = time.monotonic()
             try:
                 mentions = source.fetch(all_queries)
+                duration = (time.monotonic() - start_time) * 1000
                 all_mentions.extend(mentions)
-                logger.info("Source %s returned %d mentions",
-                            source.source_name, len(mentions))
-            except Exception:
+                logger.info("Source %s returned %d mentions (%.0fms)",
+                            source.source_name, len(mentions), duration)
+
+                # Record health
+                status = "ok" if mentions else "empty"
+                self.health_tracker.record(
+                    source.source_name, source.source_type,
+                    status, len(mentions), duration,
+                )
+            except Exception as e:
+                duration = (time.monotonic() - start_time) * 1000
                 logger.exception("Source %s failed", source.source_name)
+                self.health_tracker.record(
+                    source.source_name, source.source_type,
+                    "error", 0, duration, str(e),
+                )
+
+        # Check for failing sources and warn
+        failing = self.health_tracker.get_failing_sources(min_consecutive=3)
+        for f in failing:
+            logger.warning(
+                "SOURCE HEALTH WARNING: %s has failed %d consecutive cycles. "
+                "Last error: %s",
+                f["source_name"], f["consecutive_failures"], f["last_error_message"],
+            )
 
         logger.info("Total raw mentions: %d", len(all_mentions))
         if not all_mentions:
@@ -112,9 +150,9 @@ class FeedOrchestrator:
             return []
 
         # 3. Persist raw mentions
-        raw_ids = self._persist_raw_mentions(all_mentions)
+        self._persist_raw_mentions(all_mentions)
 
-        # 4. Match entities and score
+        # 4. Match entities and score (with geo enrichment)
         scored = self._match_and_score(all_mentions)
         logger.info("Scored %d mentions", len(scored))
 
@@ -140,10 +178,10 @@ class FeedOrchestrator:
         for incident in deduped:
             incident["ai_summary"] = summarize_incident(incident)
 
-        # 8. Persist incidents
+        # 8. Persist incidents (with timeline tracking)
         self._persist_incidents(deduped)
 
-        # 9. Route alerts
+        # 9. Route alerts (with watchlist priority)
         new_alerts = [i for i in deduped if i.get("confidence_band") in ("High", "Medium")]
         self._route_alerts(new_alerts)
 
@@ -212,6 +250,11 @@ class FeedOrchestrator:
                 f"{mention.headline} {mention.raw_text}"
             )
 
+            # Geo enrichment: if no entity match, try to identify county from text
+            county = entity.county if entity else ""
+            if not county:
+                county = enrich_county(f"{mention.headline} {mention.raw_text}") or ""
+
             scored_item = {
                 "detected_at": mention.detected_at,
                 "published_at": mention.published_at,
@@ -219,7 +262,7 @@ class FeedOrchestrator:
                 "entity_name": entity.entity_name if entity else "",
                 "matched_alias": best_score.get("matched_alias", ""),
                 "entity_type": entity.entity_type if entity else "",
-                "county": entity.county if entity else "",
+                "county": county,
                 "headline": mention.headline,
                 "source": mention.source,
                 "source_type": mention.source_type,
@@ -239,7 +282,7 @@ class FeedOrchestrator:
         return scored
 
     def _persist_incidents(self, incidents: list[dict]):
-        """Save deduplicated incidents to the database."""
+        """Save deduplicated incidents to the database with timeline tracking."""
         for inc in incidents:
             # Check if this dedup group already exists
             existing = None
@@ -258,6 +301,15 @@ class FeedOrchestrator:
                     existing.ai_summary = inc.get("ai_summary", "")
                     existing.updated_at = datetime.now(timezone.utc)
                 inc["db_id"] = existing.id
+
+                # Update timeline
+                try:
+                    auto_update_timeline(
+                        self.session, existing.id,
+                        inc.get("source_count", 1),
+                    )
+                except Exception:
+                    logger.debug("Timeline update skipped for incident %d", existing.id)
             else:
                 incident_obj = Incident(
                     detected_at=inc.get("detected_at"),
@@ -298,15 +350,29 @@ class FeedOrchestrator:
                     )
                     self.session.add(src)
 
+                # Create initial timeline event
+                try:
+                    auto_update_timeline(
+                        self.session, incident_obj.id,
+                        inc.get("source_count", 1),
+                    )
+                except Exception:
+                    logger.debug("Timeline creation skipped for incident %d", incident_obj.id)
+
         self.session.commit()
 
     def _route_alerts(self, incidents: list[dict]):
-        """Route high/medium confidence incidents to Teams, email, SharePoint."""
+        """Route high/medium confidence incidents to Teams, email, SharePoint.
+
+        Client/prospect incidents get additional watchlist routing with
+        auto-generated talking points.
+        """
         from .alerts.teams import send_teams_alert
         from .alerts.sharepoint import push_to_sharepoint
+        from .alerts.watchlist import send_watchlist_alert
 
         for inc in incidents:
-            # Teams
+            # Standard Teams alert
             try:
                 send_teams_alert(inc)
             except Exception:
@@ -317,3 +383,12 @@ class FeedOrchestrator:
                 push_to_sharepoint(inc)
             except Exception:
                 logger.exception("SharePoint push failed for %s", inc.get("entity_name"))
+
+            # Watchlist: client/prospect incidents get priority routing
+            if inc.get("is_client_or_prospect"):
+                try:
+                    send_watchlist_alert(inc)
+                except Exception:
+                    logger.exception(
+                        "Watchlist alert failed for %s", inc.get("entity_name")
+                    )
