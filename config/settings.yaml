@@ -1,0 +1,99 @@
+# PA Cyber Incident Detection Feed - Configuration
+
+polling:
+  news_interval_minutes: 30
+  gdelt_interval_minutes: 30
+  cisa_interval_minutes: 60
+  social_interval_minutes: 30
+
+scoring:
+  source_credibility:
+    government_advisory: 35
+    local_regional_news: 25
+    national_news: 20
+    social_mention: 5
+  entity_match:
+    exact_name: 25
+    alias: 15
+    geography_only: 5
+  incident_language:
+    confirmed: 25      # "confirmed breach", "ransomware attack", "data breach"
+    probable: 15        # "security incident", "network disruption"
+    unconfirmed: 5      # "rumored", "possible", "unconfirmed"
+  cross_source:
+    two_sources: 15
+    three_plus_sources: 25
+  thresholds:
+    high: 75
+    medium: 50
+    low: 25
+
+deduplication:
+  window_days: 7
+
+incident_keywords:
+  attack_terms:
+    - breach
+    - cyberattack
+    - "cyber attack"
+    - ransomware
+    - "data breach"
+    - "security incident"
+    - "unauthorized access"
+    - compromised
+    - "network intrusion"
+    - malware
+    - "phishing attack"
+    - "incident response"
+    - "systems outage"
+    - "IT outage"
+    - "outage after cyberattack"
+  confirmed_terms:
+    - "confirmed breach"
+    - "ransomware attack"
+    - "data breach notification"
+    - "data breach"
+    - "confirmed cyberattack"
+  probable_terms:
+    - "security incident"
+    - "network disruption"
+    - "systems offline"
+    - "service interruption"
+    - "IT outage"
+    - "investigating incident"
+  unconfirmed_terms:
+    - rumored
+    - possible
+    - unconfirmed
+    - alleged
+    - suspected
+  local_gov_terms:
+    - township
+    - borough
+    - municipality
+    - "municipal authority"
+    - county
+    - "school district"
+    - "water authority"
+    - "sewer authority"
+    - "public works"
+    - "police department"
+    - "tax office"
+  pennsylvania_qualifiers:
+    - Pennsylvania
+    - PA
+
+output:
+  categories:
+    - name: "Confirmed Incident"
+      description: "Public reporting or official statement clearly indicates a breach, ransomware event, or cyberattack."
+      min_confidence: 75
+    - name: "Suspected Incident"
+      description: "Credible reporting points to an event, but there is no direct confirmation yet."
+      min_confidence: 50
+    - name: "Official Advisory / Risk Context"
+      description: "No victim named, but a CISA alert or KEV item is relevant to PA municipalities or SMBs."
+      min_confidence: 25
+    - name: "Social Chatter / Needs Verification"
+      description: "Public post suggests an incident; hold below the fold until corroborated."
+      min_confidence: 0

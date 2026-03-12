@@ -1,0 +1,91 @@
+EntityName,EntityType,County,Region,Website,PriorityTier,IsClientOrProspect,Watched,Aliases
+Lower Swatara Township,Municipality,Dauphin,South Central,,2,no,yes,Lower Swatara|Township of Lower Swatara|Lower Swatara Twp
+Derry Township,Municipality,Dauphin,South Central,,2,no,yes,Derry Twp|Township of Derry
+Harrisburg City,Municipality,Dauphin,South Central,,1,no,yes,City of Harrisburg|Harrisburg
+Middletown Borough,Municipality,Dauphin,South Central,,2,no,yes,Middletown|Borough of Middletown
+Steelton Borough,Municipality,Dauphin,South Central,,2,no,yes,Steelton|Borough of Steelton
+Hummelstown Borough,Municipality,Dauphin,South Central,,2,no,yes,Hummelstown|Borough of Hummelstown
+Susquehanna Township,Municipality,Dauphin,South Central,,2,no,yes,Susquehanna Twp|Township of Susquehanna
+Lower Paxton Township,Municipality,Dauphin,South Central,,2,no,yes,Lower Paxton|Lower Paxton Twp|Township of Lower Paxton
+Swatara Township,Municipality,Dauphin,South Central,,2,no,yes,Swatara Twp|Township of Swatara
+Dauphin County,County,Dauphin,South Central,,1,no,yes,County of Dauphin
+Lancaster County,County,Lancaster,South Central,,1,no,yes,County of Lancaster
+Lancaster City,Municipality,Lancaster,South Central,,1,no,yes,City of Lancaster|Lancaster
+York County,County,York,South Central,,1,no,yes,County of York
+York City,Municipality,York,South Central,,1,no,yes,City of York|York
+Cumberland County,County,Cumberland,South Central,,1,no,yes,County of Cumberland
+Carlisle Borough,Municipality,Cumberland,South Central,,2,no,yes,Carlisle|Borough of Carlisle
+Mechanicsburg Borough,Municipality,Cumberland,South Central,,2,no,yes,Mechanicsburg|Borough of Mechanicsburg
+Camp Hill Borough,Municipality,Cumberland,South Central,,2,no,yes,Camp Hill|Borough of Camp Hill
+Lebanon County,County,Lebanon,South Central,,1,no,yes,County of Lebanon
+Lebanon City,Municipality,Lebanon,South Central,,2,no,yes,City of Lebanon|Lebanon
+Perry County,County,Perry,South Central,,2,no,yes,County of Perry
+Adams County,County,Adams,South Central,,2,no,yes,County of Adams
+Gettysburg Borough,Municipality,Adams,South Central,,2,no,yes,Gettysburg|Borough of Gettysburg
+Franklin County,County,Franklin,South Central,,2,no,yes,County of Franklin
+Chambersburg Borough,Municipality,Franklin,South Central,,2,no,yes,Chambersburg|Borough of Chambersburg
+Allegheny County,County,Allegheny,Southwest,,1,no,yes,County of Allegheny
+Pittsburgh City,Municipality,Allegheny,Southwest,,1,no,yes,City of Pittsburgh|Pittsburgh
+Chester County,County,Chester,Southeast,,1,no,yes,County of Chester
+Delaware County,County,Delaware,Southeast,,1,no,yes,County of Delaware|Delco
+Montgomery County,County,Montgomery,Southeast,,1,no,yes,County of Montgomery|Montco
+Bucks County,County,Bucks,Southeast,,1,no,yes,County of Bucks
+Philadelphia County,County,Philadelphia,Southeast,,1,no,yes,County of Philadelphia|Philly
+Lehigh County,County,Lehigh,Lehigh Valley,,1,no,yes,County of Lehigh
+Allentown City,Municipality,Lehigh,Lehigh Valley,,1,no,yes,City of Allentown|Allentown
+Northampton County,County,Northampton,Lehigh Valley,,1,no,yes,County of Northampton
+Bethlehem City,Municipality,Northampton,Lehigh Valley,,1,no,yes,City of Bethlehem|Bethlehem
+Berks County,County,Berks,Southeast,,1,no,yes,County of Berks
+Reading City,Municipality,Berks,Southeast,,1,no,yes,City of Reading|Reading
+Erie County,County,Erie,Northwest,,1,no,yes,County of Erie
+Erie City,Municipality,Erie,Northwest,,1,no,yes,City of Erie|Erie
+Luzerne County,County,Luzerne,Northeast,,1,no,yes,County of Luzerne
+Lackawanna County,County,Lackawanna,Northeast,,1,no,yes,County of Lackawanna
+Scranton City,Municipality,Lackawanna,Northeast,,1,no,yes,City of Scranton|Scranton
+Centre County,County,Centre,Central,,2,no,yes,County of Centre
+State College Borough,Municipality,Centre,Central,,2,no,yes,State College|Borough of State College
+Derry Township School District,School District,Dauphin,South Central,,2,no,yes,Derry Twp SD|Derry Township SD
+Central Dauphin School District,School District,Dauphin,South Central,,2,no,yes,Central Dauphin SD|CD School District
+Lower Dauphin School District,School District,Dauphin,South Central,,2,no,yes,Lower Dauphin SD|LD School District
+Harrisburg School District,School District,Dauphin,South Central,,2,no,yes,Harrisburg SD
+Middletown Area School District,School District,Dauphin,South Central,,2,no,yes,Middletown Area SD|MASD
+Steelton-Highspire School District,School District,Dauphin,South Central,,2,no,yes,Steelton-Highspire SD|Steel-High SD
+Lancaster School District,School District,Lancaster,South Central,,2,no,yes,Lancaster SD|School District of Lancaster
+York City School District,School District,York,South Central,,2,no,yes,York City SD
+Carlisle Area School District,School District,Cumberland,South Central,,2,no,yes,Carlisle Area SD|CASD
+Dauphin County Technical School,School District,Dauphin,South Central,,2,no,yes,DCTS|Dauphin County Tech
+Capital Area Intermediate Unit,School District,Dauphin,South Central,,2,no,yes,CAIU|IU 15
+Suez Water Pennsylvania,Utility,Dauphin,South Central,,2,no,yes,Suez Water|Suez Water PA
+Pennsylvania American Water,Utility,Statewide,Statewide,,1,no,yes,PA American Water|American Water PA
+PPL Electric Utilities,Utility,Statewide,South Central,,1,no,yes,PPL Electric|PPL Utilities|PPL
+Met-Ed,Utility,Statewide,South Central,,1,no,yes,Metropolitan Edison|Met Ed
+PECO Energy,Utility,Statewide,Southeast,,1,no,yes,PECO|PECO Energy Company
+Duquesne Light,Utility,Allegheny,Southwest,,1,no,yes,Duquesne Light Company|DLC
+UGI Utilities,Utility,Statewide,South Central,,2,no,yes,UGI|UGI Corp
+Lower Swatara Township Municipal Authority,Municipal Authority,Dauphin,South Central,,2,no,yes,Lower Swatara Muni Auth|LSTMA
+Derry Township Municipal Authority,Municipal Authority,Dauphin,South Central,,2,no,yes,DTMA|Derry Twp Municipal Authority
+Harrisburg Authority,Municipal Authority,Dauphin,South Central,,2,no,yes,The Harrisburg Authority|THA
+Capital Region Water,Municipal Authority,Dauphin,South Central,,2,no,yes,CRW|Capital Region Water Authority
+Penn State Health,Healthcare,Dauphin,South Central,,1,no,yes,Penn State Health System|PSH|Hershey Medical Center
+UPMC,Healthcare,Allegheny,Statewide,,1,no,yes,University of Pittsburgh Medical Center|UPMC Health System
+Geisinger,Healthcare,Montour,Central,,1,no,yes,Geisinger Health System|Geisinger Health
+WellSpan Health,Healthcare,York,South Central,,1,no,yes,WellSpan|Well Span Health
+Tower Health,Healthcare,Berks,Southeast,,1,no,yes,Tower Health System
+Lehigh Valley Health Network,Healthcare,Lehigh,Lehigh Valley,,1,no,yes,LVHN|Lehigh Valley Hospital
+St. Luke's University Health Network,Healthcare,Northampton,Lehigh Valley,,1,no,yes,St Lukes|SLUHN|St. Luke's Hospital
+Pinnacle Health,Healthcare,Dauphin,South Central,,2,no,yes,UPMC Pinnacle|Pinnacle Health System
+Holy Spirit Hospital,Healthcare,Cumberland,South Central,,2,no,yes,Holy Spirit|Geisinger Holy Spirit
+United Way of the Capital Region,Nonprofit,Dauphin,South Central,,3,no,yes,United Way Capital Region
+Central Pennsylvania Food Bank,Nonprofit,Dauphin,South Central,,3,no,yes,Central PA Food Bank|CPFB
+YMCA of Greater Harrisburg,Nonprofit,Dauphin,South Central,,3,no,yes,Harrisburg YMCA|Greater Harrisburg YMCA
+Bethesda Mission,Nonprofit,Dauphin,South Central,,3,no,yes,Bethesda Mission Harrisburg
+Pennsylvania Turnpike Commission,Municipality,Statewide,Statewide,,1,no,yes,PA Turnpike|Turnpike Commission
+PennDOT,Municipality,Statewide,Statewide,,1,no,yes,Pennsylvania Department of Transportation|PA DOT
+Pennsylvania State Police,Municipality,Statewide,Statewide,,1,no,yes,PA State Police|PSP
+Pennsylvania Attorney General,Municipality,Statewide,Statewide,,1,no,yes,PA Attorney General|AG Office
+Hershey Entertainment and Resorts,Business,Dauphin,South Central,,2,no,yes,Hershey Entertainment|HE&R
+Milton Hershey School,School District,Dauphin,South Central,,1,no,yes,MHS|Milton Hershey
+Penn State University,School District,Centre,Central,,1,no,yes,PSU|Pennsylvania State University|Penn State
+University of Pittsburgh,School District,Allegheny,Southwest,,1,no,yes,Pitt|U of Pittsburgh
+Temple University,School District,Philadelphia,Southeast,,1,no,yes,Temple|Temple U
+Drexel University,School District,Philadelphia,Southeast,,1,no,yes,Drexel|Drexel U
