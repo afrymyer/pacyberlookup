@@ -24,8 +24,18 @@ from .scoring.summarizer import summarize_incident
 from .search import build_all_queries
 from .sources.base import SourceMention
 from .sources.cisa import CISASource
+from .sources.cybernews import (
+    BleepingComputerSource,
+    DataBreachesNetSource,
+    RecordedFutureSource,
+    SecurityWeekSource,
+)
 from .sources.gdelt import GDELTSource
+from .sources.hibp import HIBPSource
 from .sources.news import GoogleNewsSource
+from .sources.otx import OTXSource
+from .sources.ransomware_live import RansomwareLiveSource
+from .sources.shadowserver import ShadowserverSource
 from .sources.social import RedditSource
 from .utils.text import extract_incident_type, normalize_text
 
@@ -40,12 +50,30 @@ class FeedOrchestrator:
         self.config = config
         self.scorer = ConfidenceScorer(config)
 
-        # Initialize sources
+        # Initialize sources — layered model
+        # Tier 1: High-confidence public sources
         self.sources = [
-            GoogleNewsSource(config),
-            GDELTSource(config),
-            CISASource(config),
-            RedditSource(config),
+            GoogleNewsSource(config),          # Google News RSS
+            BleepingComputerSource(config),    # Fast ransomware reporting
+            SecurityWeekSource(config),        # Enterprise breach news
+            DataBreachesNetSource(config),     # Long-tail breach tracking
+            RecordedFutureSource(config),      # Ransomware intelligence
+            CISASource(config),                # CISA alerts + KEV
+            HIBPSource(config),                # Have I Been Pwned breach DB
+        ]
+        # Tier 2: Broad discovery
+        self.sources += [
+            GDELTSource(config),               # Global news every ~15 min
+            RansomwareLiveSource(config),       # Ransomware leak site monitor
+        ]
+        # Tier 3: Threat intelligence / enrichment
+        self.sources += [
+            OTXSource(config),                 # AlienVault OTX pulses
+            ShadowserverSource(config),        # Internet exposure alerts
+        ]
+        # Tier 4: Social / chatter (signals only)
+        self.sources += [
+            RedditSource(config),              # Reddit social monitoring
         ]
 
     def run_cycle(self) -> list[dict]:

@@ -2,16 +2,33 @@
 
 polling:
   news_interval_minutes: 30
+  cybernews_interval_minutes: 30    # BleepingComputer, SecurityWeek, DataBreaches.net, Recorded Future
   gdelt_interval_minutes: 30
   cisa_interval_minutes: 60
+  hibp_interval_minutes: 60         # Have I Been Pwned
+  ransomware_live_interval_minutes: 30  # Ransomware leak site monitor
+  otx_interval_minutes: 60          # AlienVault OTX
+  shadowserver_interval_minutes: 60 # Shadowserver exposure alerts
   social_interval_minutes: 30
+
+# HIBP domain monitoring (requires HIBP_API_KEY)
+hibp:
+  monitored_domains: []
+  # Add domains to monitor for breach indicators:
+  # monitored_domains:
+  #   - lowerswatara.org
+  #   - dauphinc.org
+  #   - harrisburgpa.gov
 
 scoring:
   source_credibility:
-    government_advisory: 35
-    local_regional_news: 25
-    national_news: 20
-    social_mention: 5
+    government_advisory: 35   # CISA, Shadowserver (with API)
+    ransomware_leak: 30       # Ransomware.live (leak site confirmation)
+    breach_database: 30       # Have I Been Pwned
+    local_regional_news: 25   # PA local/regional outlets
+    national_news: 20         # BleepingComputer, SecurityWeek, DataBreaches.net, etc.
+    threat_intel: 15          # OTX, Shadowserver public stats
+    social_mention: 5         # Reddit, social chatter
   entity_match:
     exact_name: 25
     alias: 15

@@ -22,8 +22,11 @@ class ConfidenceScorer:
         scoring_cfg = config.get("scoring", {})
         self.source_weights = scoring_cfg.get("source_credibility", {
             "government_advisory": 35,
+            "ransomware_leak": 30,
+            "breach_database": 30,
             "local_regional_news": 25,
             "national_news": 20,
+            "threat_intel": 15,
             "social_mention": 5,
         })
         self.entity_weights = scoring_cfg.get("entity_match", {
@@ -160,8 +163,13 @@ class ConfidenceScorer:
 
     def get_category(self, score: float, source_type: str = "") -> str:
         """Return the output category for a score and source type."""
-        if source_type == "cisa":
+        if source_type in ("cisa", "threat_intel"):
             return "Official Advisory / Risk Context"
+        if source_type == "ransomware_leak":
+            # Leak site postings are strong confirmation of ransomware
+            if score >= self.medium_threshold:
+                return "Confirmed Incident"
+            return "Suspected Incident"
         if score >= self.high_threshold:
             return "Confirmed Incident"
         if score >= self.medium_threshold:
