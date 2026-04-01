@@ -70,6 +70,15 @@ def main():
 
     load_env()
 
+    # Validate --hours if present
+    if hasattr(args, "hours") and args.hours is not None:
+        if args.hours < 1:
+            print("Error: --hours must be at least 1")
+            sys.exit(1)
+        if args.hours > 8760:
+            print("Error: --hours cannot exceed 8760 (1 year)")
+            sys.exit(1)
+
     if args.command == "run":
         run_once(args.config)
 

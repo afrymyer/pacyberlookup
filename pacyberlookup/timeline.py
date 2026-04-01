@@ -68,7 +68,7 @@ def record_timeline_event(
     Returns:
         The created timeline event.
     """
-    incident = session.query(Incident).get(incident_id)
+    incident = session.get(Incident, incident_id)
     if not incident:
         raise ValueError(f"Incident {incident_id} not found")
 
@@ -109,7 +109,7 @@ def auto_update_timeline(session: Session, incident_id: int, source_count: int):
 
     Called by the orchestrator when an incident is updated with new data.
     """
-    incident = session.query(Incident).get(incident_id)
+    incident = session.get(Incident, incident_id)
     if not incident:
         return
 

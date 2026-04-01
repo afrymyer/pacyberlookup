@@ -115,7 +115,7 @@ class FeedOrchestrator:
         for source in sources_to_poll:
             start_time = time.monotonic()
             try:
-                mentions = source.fetch(all_queries)
+                mentions = source.fetch_with_retry(all_queries)
                 duration = (time.monotonic() - start_time) * 1000
                 all_mentions.extend(mentions)
                 logger.info("Source %s returned %d mentions (%.0fms)",

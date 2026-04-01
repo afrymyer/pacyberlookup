@@ -128,7 +128,7 @@ def render_dashboard(status: dict) -> str:
     lines.append("")
 
     # Incident summary
-    lines.append("  INCIDENTS (last {hours}h)")
+    lines.append(f"  INCIDENTS (last {hours}h)")
     lines.append(f"    High Confidence:   {status['recent_high']}")
     lines.append(f"    Medium Confidence: {status['recent_medium']}")
     lines.append(f"    Low Confidence:    {status['recent_low']}")
@@ -145,7 +145,7 @@ def render_dashboard(status: dict) -> str:
     lines.append("")
 
     # Source health
-    lines.append("  SOURCE HEALTH (last {hours}h)")
+    lines.append(f"  SOURCE HEALTH (last {hours}h)")
     if status["source_health"]:
         for source_type, count in sorted(status["source_health"].items(),
                                           key=lambda x: -x[1]):

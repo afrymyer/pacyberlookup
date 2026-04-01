@@ -29,6 +29,9 @@ class HIBPSource(BaseSource):
     HIBP_BREACHES_URL = "https://haveibeenpwned.com/api/v3/breaches"
     HIBP_DOMAIN_URL = "https://haveibeenpwned.com/api/v3/breaches?domain={domain}"
 
+    # HIBP API requires 1.5s between requests
+    rate_limit_seconds = 1.5
+
     @property
     def source_name(self) -> str:
         return "Have I Been Pwned"
@@ -82,6 +85,7 @@ class HIBPSource(BaseSource):
 
         for domain in domains:
             try:
+                self._rate_limit_wait()
                 self.logger.info("Checking HIBP for domain: %s", domain)
                 resp = requests.get(
                     self.HIBP_DOMAIN_URL.format(domain=domain),
