@@ -59,7 +59,11 @@ def send_digest_email(incidents: list[dict], subject: str | None = None) -> bool
         return False
 
     smtp_server = os.getenv("SMTP_SERVER", "")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+    try:
+        smtp_port = int(os.getenv("SMTP_PORT", "587"))
+    except ValueError:
+        logger.error("Invalid SMTP_PORT value: %s", os.getenv("SMTP_PORT"))
+        return False
     smtp_user = os.getenv("SMTP_USERNAME", "")
     smtp_pass = os.getenv("SMTP_PASSWORD", "")
     email_from = os.getenv("EMAIL_FROM", smtp_user)

@@ -1,5 +1,6 @@
 """Configuration loader for PA Cyber Incident Detection Feed."""
 
+import logging
 import os
 from pathlib import Path
 
@@ -8,14 +9,29 @@ from dotenv import load_dotenv
 
 
 def load_config(config_path: str | None = None) -> dict:
-    """Load settings from YAML config file."""
+    """Load settings from YAML config file.
+
+    Returns an empty dict if the config file is missing or malformed.
+    """
     if config_path is None:
         config_path = Path(__file__).parent.parent.parent / "config" / "settings.yaml"
     else:
         config_path = Path(config_path)
 
-    with open(config_path) as f:
-        return yaml.safe_load(f)
+    try:
+        with open(config_path) as f:
+            config = yaml.safe_load(f)
+            return config if isinstance(config, dict) else {}
+    except FileNotFoundError:
+        logging.getLogger(__name__).warning(
+            "Config file not found: %s — using defaults", config_path,
+        )
+        return {}
+    except yaml.YAMLError as e:
+        logging.getLogger(__name__).error(
+            "Failed to parse config %s: %s — using defaults", config_path, e,
+        )
+        return {}
 
 
 def load_env():

@@ -8,9 +8,10 @@ Continuously monitors public sources for signs of breaches, ransomware events, c
 
 | Tier | Sources | Purpose |
 |------|---------|---------|
-| **Tier 1** | Google News RSS, CISA alerts/advisories, PA Attorney General context | High-confidence public sources |
-| **Tier 2** | GDELT event/news monitoring | Broad discovery, "first mention" detection |
-| **Tier 3** | Reddit (social/chatter) | Signals only, not confirmation |
+| **Tier 1** | Google News RSS, BleepingComputer, SecurityWeek, DataBreaches.net, Recorded Future, CISA alerts/KEV, HIBP, PA Attorney General | High-confidence public sources |
+| **Tier 2** | GDELT event/news monitoring, Ransomware.live leak site monitor | Broad discovery, "first mention" detection |
+| **Tier 3** | AlienVault OTX, Shadowserver Foundation | Threat intelligence / enrichment |
+| **Tier 4** | Reddit (social/chatter) | Signals only, not confirmation |
 
 ### Pipeline
 
@@ -56,8 +57,22 @@ python -m pacyberlookup seed
 # Run a single detection cycle
 python -m pacyberlookup run
 
-# Start the scheduled feed loop
+# Start the scheduled feed loop (per-source polling intervals)
 python -m pacyberlookup start
+
+# View the CLI status dashboard
+python -m pacyberlookup status
+python -m pacyberlookup status --hours 48
+
+# Send a digest report now (Teams + email)
+python -m pacyberlookup digest
+python -m pacyberlookup digest --hours 12
+
+# Check source health (failures, empty results)
+python -m pacyberlookup health
+
+# View an incident's timeline (state transitions)
+python -m pacyberlookup timeline 42
 
 # Export data for Power BI
 python -m pacyberlookup export
@@ -67,26 +82,38 @@ python -m pacyberlookup export
 
 ```
 pacyberlookup/
-├── __main__.py          # CLI entry point
+├── __main__.py          # CLI entry point (run, start, status, digest, health, timeline)
 ├── models.py            # SQLAlchemy data models
-├── orchestrator.py      # Main pipeline coordinator
-├── scheduler.py         # Scheduled loop runner
+├── orchestrator.py      # Main pipeline coordinator (13 sources, health tracking)
+├── scheduler.py         # Per-source polling intervals + digest scheduling
 ├── search.py            # Search query builder
 ├── seed.py              # Entity seeding from CSV
+├── dashboard.py         # CLI status dashboard
+├── geo.py               # County-level geo enrichment (67 PA counties)
+├── timeline.py          # Incident lifecycle state machine
+├── health.py            # Source health monitoring + failure detection
 ├── sources/
-│   ├── base.py          # Base source class
+│   ├── base.py          # Base source class (retry, rate limiting)
 │   ├── news.py          # Google News RSS
 │   ├── gdelt.py         # GDELT API
-│   ├── cisa.py          # CISA alerts + KEV
+│   ├── cisa.py          # CISA alerts + KEV catalog
+│   ├── cybernews.py     # BleepingComputer, SecurityWeek, DataBreaches.net, Recorded Future
+│   ├── hibp.py          # Have I Been Pwned breach monitoring
+│   ├── otx.py           # AlienVault OTX threat intelligence
+│   ├── ransomware_live.py  # Ransomware leak site monitoring
+│   ├── shadowserver.py  # Shadowserver Foundation reports
+│   ├── pa_attorney_general.py  # PA AG breach notification scraper
 │   └── social.py        # Reddit
 ├── scoring/
 │   ├── confidence.py    # Confidence scoring model
 │   ├── dedup.py         # Deduplication logic
 │   └── summarizer.py    # AI / template summarization
 ├── alerts/
-│   ├── teams.py         # Teams webhook cards
+│   ├── teams.py         # Teams webhook Adaptive Cards
 │   ├── email.py         # Email digest
-│   └── sharepoint.py    # SharePoint list push
+│   ├── sharepoint.py    # SharePoint list push
+│   ├── digest.py        # Daily digest reports (Teams + email)
+│   └── watchlist.py     # Client/prospect watchlist with talking points
 ├── export/
 │   └── powerbi.py       # CSV/JSON export for Power BI
 └── utils/
