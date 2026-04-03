@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PA Cyber - Voting Recommendations</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f1923;
+            color: #e0e6ed;
+            min-height: 100vh;
+        }
+
+        /* ── Header ─────────────────────────────── */
+        .header {
+            background: linear-gradient(135deg, #1a2332 0%, #243447 100%);
+            border-bottom: 2px solid #2d4a5e;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #4fc3f7;
+        }
+
+        .header h1 span { color: #78909c; font-weight: 400; }
+
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+
+        .voter-input {
+            background: #1a2332;
+            border: 1px solid #2d4a5e;
+            color: #e0e6ed;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 180px;
+        }
+
+        .voter-input:focus { outline: none; border-color: #4fc3f7; }
+
+        /* ── Buttons ────────────────────────────── */
+        .btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover { transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+
+        .btn-primary { background: #4fc3f7; color: #0f1923; }
+        .btn-primary:hover { background: #81d4fa; }
+
+        .btn-import { background: #7c4dff; color: white; }
+        .btn-import:hover { background: #9e7bff; }
+
+        .btn-approve {
+            background: #00c853;
+            color: white;
+            font-size: 18px;
+            padding: 12px 24px;
+            min-width: 80px;
+        }
+        .btn-approve:hover { background: #00e676; box-shadow: 0 0 20px rgba(0, 200, 83, 0.4); }
+        .btn-approve.voted { box-shadow: 0 0 25px rgba(0, 200, 83, 0.6); outline: 3px solid #69f0ae; }
+
+        .btn-reject {
+            background: #ff1744;
+            color: white;
+            font-size: 18px;
+            padding: 12px 24px;
+            min-width: 80px;
+        }
+        .btn-reject:hover { background: #ff5252; box-shadow: 0 0 20px rgba(255, 23, 68, 0.4); }
+        .btn-reject.voted { box-shadow: 0 0 25px rgba(255, 23, 68, 0.6); outline: 3px solid #ff8a80; }
+
+        /* ── Filter Tabs ────────────────────────── */
+        .filters {
+            display: flex;
+            gap: 8px;
+            padding: 16px 32px;
+            background: #15202b;
+            border-bottom: 1px solid #1e3044;
+        }
+
+        .filter-tab {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid #2d4a5e;
+            background: transparent;
+            color: #78909c;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .filter-tab:hover { border-color: #4fc3f7; color: #4fc3f7; }
+        .filter-tab.active { background: #4fc3f7; color: #0f1923; border-color: #4fc3f7; font-weight: 600; }
+
+        /* ── Stats Bar ──────────────────────────── */
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            padding: 12px 32px;
+            background: #15202b;
+            border-bottom: 1px solid #1e3044;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #78909c;
+        }
+
+        .stat-value { font-weight: 700; font-size: 16px; }
+        .stat-value.green { color: #00c853; }
+        .stat-value.red { color: #ff1744; }
+        .stat-value.blue { color: #4fc3f7; }
+        .stat-value.yellow { color: #ffd740; }
+
+        /* ── Main Content ───────────────────────── */
+        .content { padding: 24px 32px; max-width: 1200px; margin: 0 auto; }
+
+        /* ── Recommendation Cards ───────────────── */
+        .rec-card {
+            background: #1a2332;
+            border: 1px solid #2d4a5e;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .rec-card:hover { border-color: #4fc3f7; }
+
+        .rec-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 20px 24px 12px;
+        }
+
+        .rec-title-area { flex: 1; }
+
+        .rec-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #e0e6ed;
+            margin-bottom: 6px;
+        }
+
+        .rec-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-category { background: #1e3a5f; color: #4fc3f7; }
+        .badge-priority-critical { background: #4a0e1a; color: #ff1744; }
+        .badge-priority-high { background: #4a2e0e; color: #ff9100; }
+        .badge-priority-medium { background: #3a3a0e; color: #ffd740; }
+        .badge-priority-low { background: #0e3a1a; color: #69f0ae; }
+        .badge-status-open { background: #1e3a5f; color: #4fc3f7; }
+        .badge-status-approved { background: #0e3a1a; color: #00c853; }
+        .badge-status-rejected { background: #4a0e1a; color: #ff1744; }
+        .badge-status-deferred { background: #2a2a3a; color: #b388ff; }
+
+        .rec-description {
+            padding: 0 24px 16px;
+            font-size: 14px;
+            color: #90a4ae;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        .rec-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: #15202b;
+            border-top: 1px solid #1e3044;
+        }
+
+        .vote-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .vote-count {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 20px;
+            font-weight: 700;
+            min-width: 40px;
+        }
+
+        .vote-count.green { color: #00c853; }
+        .vote-count.red { color: #ff1744; }
+
+        .vote-bar-container {
+            width: 200px;
+            height: 8px;
+            background: #2d4a5e;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .vote-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00c853 0%, #00c853 var(--approve-pct), #ff1744 var(--approve-pct), #ff1744 100%);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .rec-submitted {
+            font-size: 12px;
+            color: #546e7a;
+        }
+
+        /* ── Vote detail pills ──────────────────── */
+        .vote-details {
+            padding: 8px 24px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .vote-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .vote-pill.approve { background: #0e3a1a; color: #69f0ae; }
+        .vote-pill.reject { background: #4a0e1a; color: #ff8a80; }
+
+        .vote-pill .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .vote-pill.approve .dot { background: #00c853; }
+        .vote-pill.reject .dot { background: #ff1744; }
+
+        /* ── Modal ──────────────────────────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: #1a2332;
+            border: 1px solid #2d4a5e;
+            border-radius: 12px;
+            padding: 32px;
+            width: 500px;
+            max-width: 90vw;
+        }
+
+        .modal h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #4fc3f7;
+        }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #78909c;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            background: #0f1923;
+            border: 1px solid #2d4a5e;
+            color: #e0e6ed;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus { outline: none; border-color: #4fc3f7; }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-cancel {
+            background: #2d4a5e;
+            color: #e0e6ed;
+        }
+
+        /* ── Empty State ────────────────────────── */
+        .empty-state {
+            text-align: center;
+            padding: 80px 32px;
+            color: #546e7a;
+        }
+
+        .empty-state h3 { font-size: 18px; margin-bottom: 12px; color: #78909c; }
+
+        /* ── Auto-refresh indicator ─────────────── */
+        .refresh-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #546e7a;
+        }
+
+        .refresh-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00c853;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ── Status dropdown ────────────────────── */
+        .status-select {
+            background: transparent;
+            border: 1px solid #2d4a5e;
+            color: #78909c;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .status-select:focus { outline: none; border-color: #4fc3f7; }
+
+        /* ── Toast notifications ────────────────── */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+            animation-fill-mode: forwards;
+        }
+
+        .toast-success { background: #00c853; color: white; }
+        .toast-error { background: #ff1744; color: white; }
+
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <h1>PA Cyber <span>| Voting Recommendations</span></h1>
+    <div class="header-actions">
+        <div class="refresh-indicator">
+            <div class="refresh-dot"></div>
+            Live — auto-refreshes every 5s
+        </div>
+        <input type="text" class="voter-input" id="voterName" placeholder="Your name..." value="">
+        <button class="btn btn-import" onclick="importIncidents()">Import Incidents</button>
+        <button class="btn btn-primary" onclick="openModal()">+ New Recommendation</button>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="filters">
+    <button class="filter-tab active" data-filter="all">All</button>
+    <button class="filter-tab" data-filter="Open">Open</button>
+    <button class="filter-tab" data-filter="Approved">Approved</button>
+    <button class="filter-tab" data-filter="Rejected">Rejected</button>
+    <button class="filter-tab" data-filter="Deferred">Deferred</button>
+</div>
+
+<!-- Stats Bar -->
+<div class="stats-bar" id="statsBar">
+    <div class="stat">Total: <span class="stat-value blue" id="statTotal">0</span></div>
+    <div class="stat">Open: <span class="stat-value yellow" id="statOpen">0</span></div>
+    <div class="stat">Approved: <span class="stat-value green" id="statApproved">0</span></div>
+    <div class="stat">Rejected: <span class="stat-value red" id="statRejected">0</span></div>
+</div>
+
+<!-- Content -->
+<div class="content" id="recList"></div>
+
+<!-- New Recommendation Modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <h2>New Recommendation</h2>
+        <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="recTitle" placeholder="Brief title for the recommendation">
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="recDescription" placeholder="Detailed description of the technical recommendation..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <select id="recCategory">
+                <option>General</option>
+                <option>Incident Review</option>
+                <option>Policy Change</option>
+                <option>Infrastructure</option>
+                <option>Vulnerability</option>
+                <option>Training</option>
+                <option>Tool/Software</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Priority</label>
+            <select id="recPriority">
+                <option>Low</option>
+                <option selected>Medium</option>
+                <option>High</option>
+                <option>Critical</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="submitRecommendation()">Submit</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+    let currentFilter = 'all';
+    let recommendations = [];
+
+    // ── Filter tabs ──────────────────────────────
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelector('.filter-tab.active').classList.remove('active');
+            tab.classList.add('active');
+            currentFilter = tab.dataset.filter;
+            fetchRecommendations();
+        });
+    });
+
+    // ── Fetch recommendations ────────────────────
+    async function fetchRecommendations() {
+        try {
+            const url = currentFilter === 'all'
+                ? '/api/recommendations'
+                : `/api/recommendations?status=${currentFilter}`;
+            const res = await fetch(url);
+            recommendations = await res.json();
+            renderRecommendations();
+            updateStats();
+        } catch (err) {
+            console.error('Failed to fetch:', err);
+        }
+    }
+
+    // ── Render cards ─────────────────────────────
+    function renderRecommendations() {
+        const container = document.getElementById('recList');
+
+        if (recommendations.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>No recommendations yet</h3>
+                    <p>Click "+ New Recommendation" to add one, or "Import Incidents" to pull from detected incidents.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = recommendations.map(rec => {
+            const total = rec.total_votes || 0;
+            const approvePct = total > 0 ? (rec.approve_count / total) * 100 : 50;
+            const voterName = getVoterName();
+            const myVote = rec.votes.find(v => v.voter_name === voterName);
+
+            return `
+            <div class="rec-card">
+                <div class="rec-card-header">
+                    <div class="rec-title-area">
+                        <div class="rec-title">${escapeHtml(rec.title)}</div>
+                        <div class="rec-meta">
+                            <span class="badge badge-category">${escapeHtml(rec.category)}</span>
+                            <span class="badge badge-priority-${rec.priority.toLowerCase()}">${rec.priority}</span>
+                            <span class="badge badge-status-${rec.status.toLowerCase()}">${rec.status}</span>
+                        </div>
+                    </div>
+                    <select class="status-select" onchange="updateStatus(${rec.id}, this.value)">
+                        ${['Open', 'Approved', 'Rejected', 'Deferred'].map(s =>
+                            `<option value="${s}" ${rec.status === s ? 'selected' : ''}>${s}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="rec-description">${escapeHtml(rec.description)}</div>
+                ${rec.votes.length > 0 ? `
+                <div class="vote-details">
+                    ${rec.votes.map(v => `
+                        <span class="vote-pill ${v.vote_value}">
+                            <span class="dot"></span>
+                            ${escapeHtml(v.voter_name)}${v.comment ? ': ' + escapeHtml(v.comment) : ''}
+                        </span>
+                    `).join('')}
+                </div>` : ''}
+                <div class="rec-footer">
+                    <div class="vote-section">
+                        <button class="btn btn-approve ${myVote && myVote.vote_value === 'approve' ? 'voted' : ''}"
+                                onclick="castVote(${rec.id}, 'approve')">
+                            &#10004; ${rec.approve_count}
+                        </button>
+                        <div class="vote-bar-container">
+                            <div class="vote-bar-fill" style="--approve-pct: ${approvePct}%; width: 100%;"></div>
+                        </div>
+                        <button class="btn btn-reject ${myVote && myVote.vote_value === 'reject' ? 'voted' : ''}"
+                                onclick="castVote(${rec.id}, 'reject')">
+                            &#10008; ${rec.reject_count}
+                        </button>
+                    </div>
+                    <div class="rec-submitted">
+                        by ${escapeHtml(rec.submitted_by)} &middot;
+                        ${timeAgo(rec.created_at)}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Update stats ─────────────────────────────
+    function updateStats() {
+        // For stats, always fetch all
+        fetch('/api/recommendations').then(r => r.json()).then(all => {
+            document.getElementById('statTotal').textContent = all.length;
+            document.getElementById('statOpen').textContent = all.filter(r => r.status === 'Open').length;
+            document.getElementById('statApproved').textContent = all.filter(r => r.status === 'Approved').length;
+            document.getElementById('statRejected').textContent = all.filter(r => r.status === 'Rejected').length;
+        });
+    }
+
+    // ── Cast vote ────────────────────────────────
+    async function castVote(recId, vote) {
+        const voterName = getVoterName();
+        if (!voterName) {
+            showToast('Please enter your name first', 'error');
+            document.getElementById('voterName').focus();
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/recommendations/${recId}/vote`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    vote: vote,
+                    voter_name: voterName,
+                }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast(`Vote recorded: ${vote === 'approve' ? 'Approved ✓' : 'Rejected ✗'}`,
+                          vote === 'approve' ? 'success' : 'error');
+                fetchRecommendations();
+            } else {
+                showToast(data.error || 'Vote failed', 'error');
+            }
+        } catch (err) {
+            showToast('Network error', 'error');
+        }
+    }
+
+    // ── Update status ────────────────────────────
+    async function updateStatus(recId, status) {
+        try {
+            const res = await fetch(`/api/recommendations/${recId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status }),
+            });
+            if (res.ok) {
+                showToast(`Status updated to ${status}`, 'success');
+                fetchRecommendations();
+            }
+        } catch (err) {
+            showToast('Failed to update status', 'error');
+        }
+    }
+
+    // ── Submit new recommendation ────────────────
+    async function submitRecommendation() {
+        const title = document.getElementById('recTitle').value.trim();
+        const description = document.getElementById('recDescription').value.trim();
+        const category = document.getElementById('recCategory').value;
+        const priority = document.getElementById('recPriority').value;
+
+        if (!title || !description) {
+            showToast('Title and description are required', 'error');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/recommendations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    description,
+                    category,
+                    priority,
+                    submitted_by: getVoterName() || 'Anonymous',
+                }),
+            });
+            if (res.ok) {
+                showToast('Recommendation submitted!', 'success');
+                closeModal();
+                document.getElementById('recTitle').value = '';
+                document.getElementById('recDescription').value = '';
+                fetchRecommendations();
+            }
+        } catch (err) {
+            showToast('Failed to submit', 'error');
+        }
+    }
+
+    // ── Import incidents ─────────────────────────
+    async function importIncidents() {
+        try {
+            const res = await fetch('/api/import-incidents', { method: 'POST' });
+            const data = await res.json();
+            showToast(data.message, 'success');
+            fetchRecommendations();
+        } catch (err) {
+            showToast('Failed to import incidents', 'error');
+        }
+    }
+
+    // ── Modal ────────────────────────────────────
+    function openModal() { document.getElementById('modalOverlay').classList.add('active'); }
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeModal();
+    });
+
+    // ── Helpers ──────────────────────────────────
+    function getVoterName() {
+        return document.getElementById('voterName').value.trim();
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function timeAgo(isoStr) {
+        if (!isoStr) return '';
+        const diff = (Date.now() - new Date(isoStr).getTime()) / 1000;
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+        return `${Math.floor(diff / 86400)}d ago`;
+    }
+
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ── Auto-refresh every 5 seconds ─────────────
+    fetchRecommendations();
+    setInterval(fetchRecommendations, 5000);
+</script>
+
+</body>
+</html>

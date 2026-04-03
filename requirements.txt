@@ -21,6 +21,9 @@ rapidfuzz>=3.5.0
 # Web scraping
 beautifulsoup4>=4.12.0
 
+# Voting recommendations web app
+flask>=3.0.0
+
 # Configuration
 python-dotenv>=1.0.0
 pyyaml>=6.0.1

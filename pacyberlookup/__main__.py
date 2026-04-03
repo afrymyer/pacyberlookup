@@ -63,6 +63,12 @@ def main():
     timeline_parser = subparsers.add_parser("timeline", help="Show incident timeline")
     timeline_parser.add_argument("incident_id", type=int, help="Incident ID to show timeline for")
 
+    # vote - launch voting recommendations web app
+    vote_parser = subparsers.add_parser("vote", help="Launch the voting recommendations web app")
+    vote_parser.add_argument("--host", default="0.0.0.0", help="Host to bind (default: 0.0.0.0)")
+    vote_parser.add_argument("--port", type=int, default=5050, help="Port to bind (default: 5050)")
+    vote_parser.add_argument("--debug", action="store_true", help="Enable Flask debug mode")
+
     parser.add_argument("--log-level", default="INFO", help="Log level")
 
     args = parser.parse_args()
@@ -155,6 +161,10 @@ def main():
                 print()
         finally:
             session.close()
+
+    elif args.command == "vote":
+        from .voting.app import run_voting_app
+        run_voting_app(host=args.host, port=args.port, debug=args.debug)
 
     elif args.command == "timeline":
         from .timeline import get_incident_timeline
